@@ -1,5 +1,4 @@
 #include <Servo.h>
-//#include <Hexapod.h>
 
 Servo pata_dir[3];
 Servo pata_esq[3];
@@ -15,7 +14,14 @@ int home_rotula_esq = 135;
 int home_coxa_dir   = 90;
 int home_coxa_esq   = 90;
 
+int walkAhead_Speed = 1;
+int walkRight_Speed = 1;
+int walkLeft_Speed  = 1;
+
+
 void setup(){
+
+  Serial.begin(9600); // opens serial port, sets data rate to 57600 baud
   
   pata_dir[0].attach(13);
   pata_dir[1].attach(10);
@@ -38,14 +44,7 @@ void setup(){
   coxa_esq[1].attach(48);
   coxa_esq[2].attach(45);
 
-  setCoxas(90);
-  setRotulas(90);
-  setPatas(90);
-
-  //encolher();
-  //levantar();
-
-  // pinMode(47, OUTPUT);
+  home();
 
 }
 
@@ -53,147 +52,65 @@ void loop(){
 
   home();
 
-  // setCoxas(90);
-  // setRotulas(90);
-  // setPatas(90);
+  char incomingByte;
 
-  // pata_dir[0].write(125);  // OK
-  // pata_dir[1].write(125);  // OK
-  // pata_dir[2].write(125);  // OK
-  // pata_esq[0].write(55);   // OK  
-  // pata_esq[1].write(55);   // OK
-  // pata_esq[2].write(55);   // OK
+  while(!(Serial.available() > 0)){
+    /*Wait until take data */
+  }
 
-  // rotula_dir[0].write(125);  // OK
-  // rotula_dir[1].write(125);  // OK
-  // rotula_dir[2].write(125);  // OK
-  // rotula_esq[0].write(125);  // OK
-  // rotula_esq[1].write(125);  // OK
+  incomingByte = Serial.read();
 
-  // rotula_esq[2].write(55);  // NOK
-  // delay(500);
-  // rotula_esq[2].write(125); 
-  // delay(500);
+  switch(incomingByte){
 
-  // coxa_dir[0].write(60);   // OK
-  // coxa_dir[1].write(60);   // OK
-  // coxa_dir[2].write(60);   // OK
-  // coxa_esq[0].write(125);  // OK   
-  // coxa_esq[1].write(125);  // OK  
-  // coxa_esq[2].write(125);  // OK  
+    case '0': // Serial test
+    Serial.write(incomingByte); // send it back
+    break;
 
-  // testeCoxas();
+    case '1': // Go ahead
+    walkAhead();
+    Serial.write(incomingByte); // send it back
+    break;
 
-  // andarParaFrente();
+    case '2': // Stop
+    home();
+    Serial.write(incomingByte); // send it back
+    break;
 
-  // pata_dir[1].write(90);
-  // pata_dir[2].write(90);
-  // pata_esq[0].write(90);
-  // pata_esq[1].write(90);
-  // pata_esq[2].write(90);
+    case '3': // Go right
+    walkToRight(walkRight_Speed);
+    Serial.write(incomingByte); // send it back
+    break;
 
-  // rotula_dir[0].write(90);
-  // rotula_dir[1].write(90);
-  // rotula_dir[2].write(90);
-  // rotula_esq[0].write(90);
-  // rotula_esq[1].write(90);
-  // rotula_esq[2].write(90);
-  
-  // coxa_dir[0].write(90);
-  // coxa_dir[1].write(90);
-  // coxa_dir[2].write(90);
-  // coxa_esq[0].write(90);
-  // coxa_esq[1].write(90);
-  // coxa_esq[2].write(90);
+    case '4': // Go left
+    walkToLeft(walkLeft_Speed);
+    Serial.write(incomingByte); // send it back
+    break;
 
-  // current_pata_esq[0]   = 80;
-  // current_pata_esq[1]   = 75;
-  // current_pata_esq[2]   = 80;
-  // current_rotula_esq[0] = 85;
-  // current_rotula_esq[1] = 88;
-  // current_rotula_esq[2] = 80;
+    case '5': // Turn right
+    Serial.write(incomingByte); // send it back
+    break;
 
-  // for(int i = 0; i < 3; i++){
+    case '6': // Turn left
+    Serial.write(incomingByte); // send it back
+    break;
 
-    // pata_dir[i].write(current_pata_dir[i]);
-    // pata_esq[i].write(current_pata_esq[i]);
-    // rotula_dir[i].write(current_rotula_dir[i]);
-    // rotula_esq[i].write(current_rotula_esq[i]);
-    // coxa_dir[i].write(current_coxa_dir[i]);
-    // coxa_esq[i].write(current_coxa_esq[i]);
+    case '7': // Squat
+    walkToRight(walkRight_Speed);
+    Serial.write(incomingByte); // send it back
+    break;
 
-  // }
+    case '8': // Rise
+    Serial.write(incomingByte); // send it back
+    break;
 
-  // setCoxas(90);
-  // setRotulas(90);
-  // setPatas(90);
+    case '9': // Rise
+    Serial.write(incomingByte); // send it back
+    break;
 
-  /*  
-  **  Examplo:
-  ** 
-  **    coxa 1 da direita move 30 graus para cima
-  **    mexer(0, 1, 1, 30, 0)
-  **
-  **  membro:       0 - coxa, 1 - rotula ou 2 - pata
-  **
-  **  pos_membro:   0, 1 ou 2
-  **
-  **  dir_esq:      0 - direita ou 1 - esquerda
-  **
-  **  cima_baixo :  0 - cima ou 1 - baixo
-  **
-  */
+    default:
+    break;
 
-  // current_pata_esq[0]   = 80;
-  // current_pata_esq[1]   = 75;
-  // current_pata_esq[2]   = 80;
-  // current_rotula_esq[0] = 85;
-  // current_rotula_esq[1] = 88;
-  // current_rotula_esq[2] = 80;
-
-  //setPatas(135);
-  // setPatas(45);
-
-  //andarParaFrente();
-
-  // andarParaDireita();
-
-  // andarParaEsquerda();
-
-  //setPatas(90);
-
-  // virarParaDireita();
-
-  // virarParaEsquerda();
-
-  //delay(3000);
-  
-  
-  //testeRotulas();
-  //testeCoxas();
-  //testePatas();
-
-  // encolher();
-
-  // delay(6000);
-
-  // setPatas(90);
-  // delay(500);
-
-  // setRotulas(90);
-  // delay(500);
-
-  // setCoxas(90);
-  // delay(500);
-
-  // setCoxas(90);
-  // delay(500);
-
-  // setCoxas(120);
-  // delay(500);
-
-  // setCoxas(90);
-  // delay(500);
+  }
 
 }
 
@@ -209,6 +126,275 @@ void home(){
     coxa_esq[i].write(home_coxa_esq);
 
   }
+
+}
+
+void walkAhead(int speed = 1){
+
+  home();
+
+  // Rise group 1
+  for(int degree = 0; degree < 30; degree += speed){
+
+    rotula_dir[0].write(home_rotula_dir - degree);
+    rotula_dir[2].write(home_rotula_dir - degree);
+    rotula_esq[1].write(home_rotula_esq + degree);
+
+    delay(1000/60);
+
+  }
+
+  // Move group 1
+  for(int degree = 0; degree < 30; degree += speed){
+
+    coxa_dir[0].write(home_coxa_dir - degree);
+    coxa_dir[2].write(home_coxa_dir - degree);
+    coxa_esq[1].write(home_coxa_esq + degree);
+
+    delay(1000/60);
+
+  }
+
+  // Down group 1
+
+  for(int degree = 0; degree < 30; degree += speed){
+
+    rotula_dir[0].write(home_rotula_dir - 30 + degree);
+    rotula_dir[2].write(home_rotula_dir - 30 + degree);
+    rotula_esq[1].write(home_rotula_esq + 30 - degree);
+
+    delay(1000/60);
+
+  }
+
+  // Rise group 2
+
+  for(int degree = 0; degree < 30; degree += speed){
+
+    rotula_esq[0].write(home_rotula_esq + degree);
+    rotula_esq[2].write(home_rotula_esq + degree);
+    rotula_dir[1].write(home_rotula_dir - degree);
+
+    delay(1000/60);
+
+  }
+
+  // Move grupo 2
+
+  for(int degree = 0; degree < 30; degree += speed){
+
+    coxa_esq[0].write(home_coxa_esq + degree);
+    coxa_esq[2].write(home_coxa_esq + degree);
+    coxa_dir[1].write(home_coxa_dir - degree);
+
+    delay(1000/60);
+
+  }
+  // Down grupo 2
+
+  for(int degree = 0; degree < 30; degree += speed){
+
+    rotula_esq[0].write(home_rotula_esq + 30 - degree);
+    rotula_esq[2].write(home_rotula_esq + 30 - degree);
+    rotula_dir[1].write(home_rotula_dir - 30 + degree);
+
+    delay(1000/60);
+
+  }
+
+  // Puxar corpo
+
+  for(int degree = 0; degree < 30; degree += speed){
+
+    coxa_dir[0].write(home_coxa_dir - 30 + degree);
+    coxa_dir[1].write(home_coxa_dir - 30 + degree);
+    coxa_dir[2].write(home_coxa_dir - 30 + degree);
+    coxa_esq[0].write(home_coxa_esq + 30 - degree);
+    coxa_esq[1].write(home_coxa_esq + 30 - degree);
+    coxa_esq[2].write(home_coxa_esq + 30 - degree);
+
+    delay(1000/60);
+
+  }
+
+
+  home();
+
+}
+
+void walkToRight(int speed = 1){
+
+  home();
+
+  // Rise group 1
+  for(int degree = 0; degree < 30; degree += speed){
+
+    rotula_dir[0].write(home_rotula_dir - degree);
+    rotula_dir[2].write(home_rotula_dir - degree);
+    rotula_esq[1].write(home_rotula_esq + degree);
+
+    delay(1000/60);
+
+  }
+
+  // Movimentar group 1 para direita
+  for(int degree = 0; degree < 20; degree += speed){
+
+    pata_dir[0].write(home_pata_dir + degree);
+    pata_dir[2].write(home_pata_dir + degree);
+    pata_esq[1].write(home_pata_esq + degree);
+
+    delay(1000/80);
+
+  }
+
+  // Down group 1
+  for(int degree = 0; degree < 30; degree += speed){
+
+    rotula_dir[0].write(home_rotula_dir - 30 + degree);
+    rotula_dir[2].write(home_rotula_dir - 30 + degree);
+    rotula_esq[1].write(home_rotula_esq + 30 - degree);
+
+    delay(1000/60);
+
+  }
+
+  // Rise group 2
+
+  for(int degree = 0; degree < 30; degree += speed){
+
+    rotula_esq[0].write(home_rotula_esq + degree);
+    rotula_esq[2].write(home_rotula_esq + degree);
+    rotula_dir[1].write(home_rotula_dir - degree);
+
+    delay(1000/60);
+
+  }
+
+  // Movimentar grupo 2 para direita
+  for(int degree = 0; degree < 20; degree += speed){
+
+    pata_esq[0].write(home_pata_esq + degree);
+    pata_esq[2].write(home_pata_esq + degree);
+    pata_dir[1].write(home_pata_dir + degree);
+
+    delay(1000/80);
+
+  }
+
+  // Down grupo 2
+  for(int degree = 0; degree < 30; degree += speed){
+
+    rotula_esq[0].write(home_rotula_esq + 30 - degree);
+    rotula_esq[2].write(home_rotula_esq + 30 - degree);
+    rotula_dir[1].write(home_rotula_dir - 30 + degree);
+
+    delay(1000/60);
+
+  }
+
+  for(int degree = 0; degree < 20; degree += speed){
+
+    pata_dir[0].write(home_pata_dir + 20 - degree);
+    pata_dir[1].write(home_pata_dir + 20 - degree);
+    pata_dir[2].write(home_pata_dir + 20 - degree);
+    pata_esq[0].write(home_pata_esq + 20 - degree);
+    pata_esq[1].write(home_pata_esq + 20 - degree);
+    pata_esq[2].write(home_pata_esq + 20 - degree);
+
+    delay(1000/80);
+
+  }
+
+  home();
+
+}
+
+void walkToLeft(int speed = 1){
+
+  home();
+
+  // Rise group 1
+  for(int degree = 0; degree < 30; degree += speed){
+
+    rotula_dir[0].write(home_rotula_dir - degree);
+    rotula_dir[2].write(home_rotula_dir - degree);
+    rotula_esq[1].write(home_rotula_esq + degree);
+
+    delay(1000/60);
+
+  }
+
+  // Movimentar group 1 para direita
+  for(int degree = 0; degree < 20; degree += speed){
+
+    pata_dir[0].write(home_pata_dir - degree);
+    pata_dir[2].write(home_pata_dir - degree);
+    pata_esq[1].write(home_pata_esq - degree);
+
+    delay(1000/80);
+
+  }
+
+  // Down group 1
+  for(int degree = 0; degree < 30; degree += speed){
+
+    rotula_dir[0].write(home_rotula_dir - 30 + degree);
+    rotula_dir[2].write(home_rotula_dir - 30 + degree);
+    rotula_esq[1].write(home_rotula_esq + 30 - degree);
+
+    delay(1000/60);
+
+  }
+
+  // Rise group 2
+
+  for(int degree = 0; degree < 30; degree += speed){
+
+    rotula_esq[0].write(home_rotula_esq + degree);
+    rotula_esq[2].write(home_rotula_esq + degree);
+    rotula_dir[1].write(home_rotula_dir - degree);
+
+    delay(1000/60);
+
+  }
+
+  // Movimentar grupo 2 para direita
+  for(int degree = 0; degree < 20; degree += speed){
+
+    pata_esq[0].write(home_pata_esq - degree);
+    pata_esq[2].write(home_pata_esq - degree);
+    pata_dir[1].write(home_pata_dir - degree);
+
+    delay(1000/80);
+
+  }
+
+  // Down grupo 2
+  for(int degree = 0; degree < 30; degree += speed){
+
+    rotula_esq[0].write(home_rotula_esq + 30 - degree);
+    rotula_esq[2].write(home_rotula_esq + 30 - degree);
+    rotula_dir[1].write(home_rotula_dir - 30 + degree);
+
+    delay(1000/60);
+
+  }
+
+  for(int degree = 0; degree < 20; degree += speed){
+
+    pata_dir[0].write(home_pata_dir - 20 + degree);
+    pata_dir[1].write(home_pata_dir - 20 + degree);
+    pata_dir[2].write(home_pata_dir - 20 + degree);
+    pata_esq[0].write(home_pata_esq - 20 + degree);
+    pata_esq[1].write(home_pata_esq - 20 + degree);
+    pata_esq[2].write(home_pata_esq - 20 + degree);
+
+    delay(1000/80);
+
+  }
+
+  home();
 
 }
 
@@ -237,7 +423,7 @@ void encolher(){
         pata_esq[2].write(90 + 0.015*i);
   }
 
-  //Baixar patas
+  //Down patas
   for(int i = 0; i < 1500; i++){
 
         pata_dir[0].write(60 - 0.015*i);
@@ -254,52 +440,52 @@ void agachar(){
   //Levanta rotula
   for(int i = 0; i < 4500; i++){
 
-      rotula_dir[0].write(90 - 0.01*i);
-      rotula_dir[1].write(90 - 0.01*i);
-      rotula_dir[2].write(90 - 0.01*i);
-      rotula_esq[0].write(90 + 0.01*i);
-      rotula_esq[1].write(90 + 0.01*i);
-      rotula_esq[2].write(90 + 0.01*i);
+      rotula_dir[0].write(45-15);
+      rotula_dir[1].write(45-15);
+      rotula_dir[2].write(45-15);
+      rotula_esq[0].write(135+15);
+      rotula_esq[1].write(135+15);
+      rotula_esq[2].write(135+15);
 
-      delay(4500/1000);
+      // delay(4500/1000);
 
   }
 
   // Pata pra dentro
   for(int i = 0; i < 9000; i++){
 
-      pata_dir[0].write(90 - 0.01*i);
-      pata_dir[1].write(90 - 0.01*i);
-      pata_dir[2].write(90 - 0.01*i);
-      pata_esq[0].write(90 + 0.01*i);
-      pata_esq[1].write(90 + 0.01*i);
-      pata_esq[2].write(90 + 0.01*i);
+      pata_dir[0].write(90 - 75);
+      pata_dir[1].write(90 - 75);
+      pata_dir[2].write(90 - 75);
+      pata_esq[0].write(90 + 75);
+      pata_esq[1].write(90 + 75);
+      pata_esq[2].write(90 + 75);
 
   }
 
-  //Baixa rotula
-  for(int i = 0; i < 1500; i++){
+  // //Baixa rotula
+  // for(int i = 0; i < 1500; i++){
 
-      rotula_dir[0].write(45 + 0.01*i);
-      rotula_dir[1].write(45 + 0.01*i);
-      rotula_dir[2].write(45 + 0.01*i);
-      rotula_esq[0].write(135 - 0.01*i);
-      rotula_esq[1].write(135 - 0.01*i);
-      rotula_esq[2].write(135 - 0.01*i);
+  //     rotula_dir[0].write(45 + 0.01*i);
+  //     rotula_dir[1].write(45 + 0.01*i);
+  //     rotula_dir[2].write(45 + 0.01*i);
+  //     rotula_esq[0].write(135 - 0.01*i);
+  //     rotula_esq[1].write(135 - 0.01*i);
+  //     rotula_esq[2].write(135 - 0.01*i);
 
-  }
+  // }
 
-  //Baixa rotula
-  for(int i = 0; i < 4500; i++){
+  // //Baixa rotula
+  // for(int i = 0; i < 4500; i++){
 
-      rotula_dir[0].write(60 - 0.01*i);
-      rotula_dir[1].write(60 - 0.01*i);
-      rotula_dir[2].write(60 - 0.01*i);
-      rotula_esq[0].write(120 + 0.01*i);
-      rotula_esq[1].write(120 + 0.01*i);
-      rotula_esq[2].write(120 + 0.01*i);
+  //     rotula_dir[0].write(60 - 0.01*i);
+  //     rotula_dir[1].write(60 - 0.01*i);
+  //     rotula_dir[2].write(60 - 0.01*i);
+  //     rotula_esq[0].write(120 + 0.01*i);
+  //     rotula_esq[1].write(120 + 0.01*i);
+  //     rotula_esq[2].write(120 + 0.01*i);
 
-  }
+  // }
 
 }
 
@@ -401,14 +587,14 @@ void levantar(){
  
 }
 
-void andarParaFrente(){
+void andarAcelerando(){
 
   for(int j = 1; j < 9; j=j*2)
   {
 
     for(int k = 0; k < 3; k++){
 
-      // Erguer grupo 1
+      // Erguer group 1
       for(int i = 0; i < 3000; i = i + 1*j){
 
           rotula_dir[0].write(90 - 0.01*i);
@@ -417,7 +603,7 @@ void andarParaFrente(){
 
       }
 
-      // Avançar grupo 1
+      // Avançar group 1
       for(int i = 0; i < 3000; i = i + 1*j){
 
           coxa_dir[0].write(90 - 0.01*i);
@@ -426,7 +612,7 @@ void andarParaFrente(){
 
       }
 
-      // Baixar grupo 1
+      // Down group 1
       for(int i = 0; i < 3000; i = i + 1*j){
 
           rotula_dir[0].write(60 + 0.01*i);
@@ -453,7 +639,7 @@ void andarParaFrente(){
 
       }
 
-      // Baixar grupo 2
+      // Down grupo 2
       for(int i = 0; i < 3000; i = i + 1*j){
 
           rotula_esq[0].write(120 - 0.01*i);
@@ -480,141 +666,10 @@ void andarParaFrente(){
 
 }
 
-void andarParaDireita(){
-
-  // Erguer grupo 1
-  for(int i = 0; i < 3000; i++){
-
-      rotula_dir[0].write(90 - 0.01*i);
-      rotula_dir[2].write(90 - 0.01*i);
-      rotula_esq[1].write(90 + 0.01*i);
-
-  }
-
-  // Movimentar grupo 1 para direita
-  for(int i = 0; i < 4500; i++){
-
-      pata_dir[0].write(90 + 0.01*i);
-      pata_dir[2].write(90 + 0.01*i);
-      pata_esq[1].write(90 + 0.01*i);
-
-  }
-
-  // Baixar grupo 1
-  for(int i = 0; i < 3000; i++){
-
-      rotula_dir[0].write(60 + 0.01*i);
-      rotula_dir[2].write(60 + 0.01*i);
-      rotula_esq[1].write(120 - 0.01*i);
-
-  }
-
-  // Erguer grupo 2
-  for(int i = 0; i < 3000; i++){
-
-      rotula_esq[0].write(90 + 0.01*i);
-      rotula_esq[2].write(90 + 0.01*i);
-      rotula_dir[1].write(90 - 0.01*i);
-
-  }
-
-  // Movimentar grupo 2 para direita
-  for(int i = 0; i < 4500; i++){
-
-      pata_esq[0].write(90 + 0.01*i);
-      pata_esq[2].write(90 + 0.01*i);
-      pata_dir[1].write(90 + 0.01*i);
-
-  }
-
-  // Baixar grupo 2
-  for(int i = 0; i < 3000; i++){
-
-      rotula_esq[0].write(120 - 0.01*i);
-      rotula_esq[2].write(120 - 0.01*i);
-      rotula_dir[1].write(60 + 0.01*i);
-
-  }
-
-  // Puxar corpo
-  pata_dir[0].write(90);
-  pata_dir[1].write(90);
-  pata_dir[2].write(90);
-  pata_esq[0].write(90);
-  pata_esq[1].write(90);
-  pata_esq[2].write(90);
-
-}
-
-void andarParaEsquerda(){
-
-  // Erguer grupo 1
-  for(int i = 0; i < 3000; i++){
-
-      rotula_dir[0].write(90 - 0.01*i);
-      rotula_dir[2].write(90 - 0.01*i);
-      rotula_esq[1].write(90 + 0.01*i);
-
-  }
-
-  // Movimentar grupo 1 para direita
-  for(int i = 0; i < 4500; i++){
-
-      pata_dir[0].write(90 - 0.01*i);
-      pata_dir[2].write(90 - 0.01*i);
-      pata_esq[1].write(90 - 0.01*i);
-
-  }
-
-  // Baixar grupo 1
-  for(int i = 0; i < 3000; i++){
-
-      rotula_dir[0].write(60 + 0.01*i);
-      rotula_dir[2].write(60 + 0.01*i);
-      rotula_esq[1].write(120 - 0.01*i);
-
-  }
-
-  // Erguer grupo 2
-  for(int i = 0; i < 3000; i++){
-
-      rotula_esq[0].write(90 + 0.01*i);
-      rotula_esq[2].write(90 + 0.01*i);
-      rotula_dir[1].write(90 - 0.01*i);
-
-  }
-
-  // Movimentar grupo 2 para direita
-  for(int i = 0; i < 4500; i++){
-
-      pata_esq[0].write(90 - 0.01*i);
-      pata_esq[2].write(90 - 0.01*i);
-      pata_dir[1].write(90 - 0.01*i);
-
-  }
-
-  // Baixar grupo 2
-  for(int i = 0; i < 3000; i++){
-
-      rotula_esq[0].write(120 - 0.01*i);
-      rotula_esq[2].write(120 - 0.01*i);
-      rotula_dir[1].write(60 + 0.01*i);
-
-  }
-
-  // Puxar corpo
-  pata_dir[0].write(90);
-  pata_dir[1].write(90);
-  pata_dir[2].write(90);
-  pata_esq[0].write(90);
-  pata_esq[1].write(90);
-  pata_esq[2].write(90);
-
-}
 
 void virarParaDireita(){
 
-  // Erguer grupo 1
+  // Erguer group 1
   for(int i = 0; i < 3000; i++){
 
       rotula_dir[0].write(90 - 0.01*i);
@@ -623,7 +678,7 @@ void virarParaDireita(){
 
   }
 
-  // Vira grupo 1
+  // Vira group 1
   for(int i = 0; i < 3000; i++){
 
       coxa_dir[0].write(90 + 0.01*i);
@@ -632,7 +687,7 @@ void virarParaDireita(){
 
   }
 
-  // Baixar grupo 1
+  // Down group 1
   for(int i = 0; i < 3000; i++){
 
       rotula_dir[0].write(60 + 0.01*i);
@@ -659,7 +714,7 @@ void virarParaDireita(){
 
   }
 
-  // Baixar grupo 2
+  // Down grupo 2
   for(int i = 0; i < 3000; i++){
 
       rotula_esq[0].write(120 - 0.01*i);
@@ -684,7 +739,7 @@ void virarParaDireita(){
 
 void virarParaEsquerda(){
 
-  // Erguer grupo 1
+  // Erguer group 1
   for(int i = 0; i < 3000; i++){
 
       rotula_dir[0].write(90 - 0.01*i);
@@ -693,7 +748,7 @@ void virarParaEsquerda(){
 
   }
 
-  // Vira grupo 1
+  // Vira group 1
   for(int i = 0; i < 3000; i++){
 
       coxa_dir[0].write(90 - 0.01*i);
@@ -702,7 +757,7 @@ void virarParaEsquerda(){
 
   }
 
-  // Baixar grupo 1
+  // Down group 1
   for(int i = 0; i < 3000; i++){
 
       rotula_dir[0].write(60 + 0.01*i);
@@ -729,7 +784,7 @@ void virarParaEsquerda(){
 
   }
 
-  // Baixar grupo 2
+  // Down grupo 2
   for(int i = 0; i < 3000; i++){
 
       rotula_esq[0].write(120 - 0.01*i);
@@ -756,7 +811,7 @@ void virarParaEsquerda(){
 /*  
 **  Examplo:
 ** 
-**    coxa 1 da direita move 30 graus para cima
+**    coxa 1 da direita move 30 degrees para cima
 **    mexer(0, 1, 1, 30, 0)
 **
 **  membro:       0 - coxa, 1 - rotula ou 2 - pata
