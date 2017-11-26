@@ -7,17 +7,19 @@ Servo rotula_esq[3];
 Servo coxa_dir[3];
 Servo coxa_esq[3];
 
-int home_pata_dir   = 30;
-int home_pata_esq   = 150;
-int home_rotula_dir = 45;
-int home_rotula_esq = 135;
-int home_coxa_dir   = 90;
-int home_coxa_esq   = 90;
+int home_pata_dir[3]    = {40,  40,   40};
+int home_pata_esq[3]    = {150, 150,  150};
+int home_rotula_dir[3]  = {45,  45,   40};
+int home_rotula_esq[3]  = {145, 135,  135};
+int home_coxa_dir[3]    = {100,  90,   90};
+int home_coxa_esq[3]    = {90,  90,   90};
 
 int walkAhead_Speed = 1;
 int walkRight_Speed = 1;
 int walkLeft_Speed  = 1;
+int squat_Speed  = 1;
 
+bool crouched = false;
 
 void setup(){
 
@@ -50,67 +52,77 @@ void setup(){
 
 void loop(){
 
-  home();
+  // walkAhead(walkAhead_Speed);
 
-  char incomingByte;
+  // home();
 
-  while(!(Serial.available() > 0)){
-    /*Wait until take data */
-  }
+  squat(squat_Speed);
 
-  incomingByte = Serial.read();
+  // home();
 
-  switch(incomingByte){
+  // agachar();
+  // walkToRight(walkRight_Speed);
+  // walkToLeft(walkLeft_Speed);
 
-    case '0': // Serial test
-    Serial.write(incomingByte); // send it back
-    break;
+  // char incomingByte;
 
-    case '1': // Go ahead
-    walkAhead();
-    Serial.write(incomingByte); // send it back
-    break;
+  // while(!(Serial.available() > 0)){
+  //   /*Wait until take data */
+  // }
 
-    case '2': // Stop
-    home();
-    Serial.write(incomingByte); // send it back
-    break;
+  // incomingByte = Serial.read();
 
-    case '3': // Go right
-    walkToRight(walkRight_Speed);
-    Serial.write(incomingByte); // send it back
-    break;
+  // switch(incomingByte){
 
-    case '4': // Go left
-    walkToLeft(walkLeft_Speed);
-    Serial.write(incomingByte); // send it back
-    break;
+  //   case '0': // Serial test
+  //   Serial.write(incomingByte); // send it back
+  //   break;
 
-    case '5': // Turn right
-    Serial.write(incomingByte); // send it back
-    break;
+  //   case '1': // Go ahead
+  //   walkAhead();
+  //   Serial.write(incomingByte); // send it back
+  //   break;
 
-    case '6': // Turn left
-    Serial.write(incomingByte); // send it back
-    break;
+  //   case '2': // Stop
+  //   home();
+  //   Serial.write(incomingByte); // send it back
+  //   break;
 
-    case '7': // Squat
-    walkToRight(walkRight_Speed);
-    Serial.write(incomingByte); // send it back
-    break;
+  //   case '3': // Go right
+  //   walkToRight(walkRight_Speed);
+  //   Serial.write(incomingByte); // send it back
+  //   break;
 
-    case '8': // Rise
-    Serial.write(incomingByte); // send it back
-    break;
+  //   case '4': // Go left
+  //   walkToLeft(walkLeft_Speed);
+  //   Serial.write(incomingByte); // send it back
+  //   break;
 
-    case '9': // Rise
-    Serial.write(incomingByte); // send it back
-    break;
+  //   case '5': // Turn right
+  //   Serial.write(incomingByte); // send it back
+  //   break;
 
-    default:
-    break;
+  //   case '6': // Turn left
+  //   Serial.write(incomingByte); // send it back
+  //   break;
 
-  }
+  //   case '7': // Squat
+  //   walkToRight(walkRight_Speed);
+  //   Serial.write(incomingByte); // send it back
+  //   break;
+
+  //   case '8': // Rise
+  //   Serial.write(incomingByte); // send it back
+  //   break;
+
+  //   case '9': // Rise
+  //   Serial.write(incomingByte); // send it back
+  //   break;
+
+  //   default:
+  //   break;
+
+  // }
 
 }
 
@@ -118,12 +130,12 @@ void home(){
 
   for(int i = 0; i < 3; i++){
 
-    pata_dir[i].write(home_pata_dir);
-    pata_esq[i].write(home_pata_esq);
-    rotula_dir[i].write(home_rotula_dir);
-    rotula_esq[i].write(home_rotula_esq);
-    coxa_dir[i].write(home_coxa_dir);
-    coxa_esq[i].write(home_coxa_esq);
+    pata_dir[i].write(home_pata_dir[i]);
+    pata_esq[i].write(home_pata_esq[i]);
+    rotula_dir[i].write(home_rotula_dir[i]);
+    rotula_esq[i].write(home_rotula_esq[i]);
+    coxa_dir[i].write(home_coxa_dir[i]);
+    coxa_esq[i].write(home_coxa_esq[i]);
 
   }
 
@@ -131,25 +143,28 @@ void home(){
 
 void walkAhead(int speed = 1){
 
+  int mainAmplitude = 30;
+  int secondaryAmplitude = 25;
+
   home();
 
   // Rise group 1
-  for(int degree = 0; degree < 30; degree += speed){
+  for(int degree = 0; degree < secondaryAmplitude; degree += speed){
 
-    rotula_dir[0].write(home_rotula_dir - degree);
-    rotula_dir[2].write(home_rotula_dir - degree);
-    rotula_esq[1].write(home_rotula_esq + degree);
+    rotula_dir[0].write(home_rotula_dir[0] - degree);
+    rotula_dir[2].write(home_rotula_dir[2] - degree);
+    rotula_esq[1].write(home_rotula_esq[1] + degree);
 
     delay(1000/60);
 
   }
 
   // Move group 1
-  for(int degree = 0; degree < 30; degree += speed){
+  for(int degree = 0; degree < mainAmplitude; degree += speed){
 
-    coxa_dir[0].write(home_coxa_dir - degree);
-    coxa_dir[2].write(home_coxa_dir - degree);
-    coxa_esq[1].write(home_coxa_esq + degree);
+    coxa_dir[0].write(home_coxa_dir[0] - degree);
+    coxa_dir[2].write(home_coxa_dir[2] - degree);
+    coxa_esq[1].write(home_coxa_esq[1] + degree);
 
     delay(1000/60);
 
@@ -157,11 +172,11 @@ void walkAhead(int speed = 1){
 
   // Down group 1
 
-  for(int degree = 0; degree < 30; degree += speed){
+  for(int degree = 0; degree < secondaryAmplitude; degree += speed){
 
-    rotula_dir[0].write(home_rotula_dir - 30 + degree);
-    rotula_dir[2].write(home_rotula_dir - 30 + degree);
-    rotula_esq[1].write(home_rotula_esq + 30 - degree);
+    rotula_dir[0].write(home_rotula_dir[0] - secondaryAmplitude + degree);
+    rotula_dir[2].write(home_rotula_dir[2] - secondaryAmplitude + degree);
+    rotula_esq[1].write(home_rotula_esq[1] + secondaryAmplitude - degree);
 
     delay(1000/60);
 
@@ -169,11 +184,11 @@ void walkAhead(int speed = 1){
 
   // Rise group 2
 
-  for(int degree = 0; degree < 30; degree += speed){
+  for(int degree = 0; degree < secondaryAmplitude; degree += speed){
 
-    rotula_esq[0].write(home_rotula_esq + degree);
-    rotula_esq[2].write(home_rotula_esq + degree);
-    rotula_dir[1].write(home_rotula_dir - degree);
+    rotula_esq[0].write(home_rotula_esq[0] + degree);
+    rotula_esq[2].write(home_rotula_esq[2] + degree);
+    rotula_dir[1].write(home_rotula_dir[1] - degree);
 
     delay(1000/60);
 
@@ -181,22 +196,22 @@ void walkAhead(int speed = 1){
 
   // Move grupo 2
 
-  for(int degree = 0; degree < 30; degree += speed){
+  for(int degree = 0; degree < mainAmplitude; degree += speed){
 
-    coxa_esq[0].write(home_coxa_esq + degree);
-    coxa_esq[2].write(home_coxa_esq + degree);
-    coxa_dir[1].write(home_coxa_dir - degree);
+    coxa_esq[0].write(home_coxa_esq[0] + degree);
+    coxa_esq[2].write(home_coxa_esq[2] + degree);
+    coxa_dir[1].write(home_coxa_dir[1] - degree);
 
     delay(1000/60);
 
   }
   // Down grupo 2
 
-  for(int degree = 0; degree < 30; degree += speed){
+  for(int degree = 0; degree < secondaryAmplitude; degree += speed){
 
-    rotula_esq[0].write(home_rotula_esq + 30 - degree);
-    rotula_esq[2].write(home_rotula_esq + 30 - degree);
-    rotula_dir[1].write(home_rotula_dir - 30 + degree);
+    rotula_esq[0].write(home_rotula_esq[0] + secondaryAmplitude - degree);
+    rotula_esq[2].write(home_rotula_esq[2] + secondaryAmplitude - degree);
+    rotula_dir[1].write(home_rotula_dir[1] - secondaryAmplitude + degree);
 
     delay(1000/60);
 
@@ -204,19 +219,18 @@ void walkAhead(int speed = 1){
 
   // Puxar corpo
 
-  for(int degree = 0; degree < 30; degree += speed){
+  for(int degree = 0; degree < mainAmplitude; degree += speed){
 
-    coxa_dir[0].write(home_coxa_dir - 30 + degree);
-    coxa_dir[1].write(home_coxa_dir - 30 + degree);
-    coxa_dir[2].write(home_coxa_dir - 30 + degree);
-    coxa_esq[0].write(home_coxa_esq + 30 - degree);
-    coxa_esq[1].write(home_coxa_esq + 30 - degree);
-    coxa_esq[2].write(home_coxa_esq + 30 - degree);
+    coxa_dir[0].write(home_coxa_dir[0] - mainAmplitude + degree);
+    coxa_dir[1].write(home_coxa_dir[1] - mainAmplitude + degree);
+    coxa_dir[2].write(home_coxa_dir[2] - mainAmplitude + degree);
+    coxa_esq[0].write(home_coxa_esq[0] + mainAmplitude - degree);
+    coxa_esq[1].write(home_coxa_esq[1] + mainAmplitude - degree);
+    coxa_esq[2].write(home_coxa_esq[2] + mainAmplitude - degree);
 
     delay(1000/60);
 
   }
-
 
   home();
 
@@ -224,14 +238,17 @@ void walkAhead(int speed = 1){
 
 void walkToRight(int speed = 1){
 
+  int mainAmplitude = 30;
+  int secondaryAmplitude = 25;
+
   home();
 
   // Rise group 1
   for(int degree = 0; degree < 30; degree += speed){
 
-    rotula_dir[0].write(home_rotula_dir - degree);
-    rotula_dir[2].write(home_rotula_dir - degree);
-    rotula_esq[1].write(home_rotula_esq + degree);
+    rotula_dir[0].write(home_rotula_dir[0] - degree);
+    rotula_dir[2].write(home_rotula_dir[2] - degree);
+    rotula_esq[1].write(home_rotula_esq[1] + degree);
 
     delay(1000/60);
 
@@ -240,9 +257,9 @@ void walkToRight(int speed = 1){
   // Movimentar group 1 para direita
   for(int degree = 0; degree < 20; degree += speed){
 
-    pata_dir[0].write(home_pata_dir + degree);
-    pata_dir[2].write(home_pata_dir + degree);
-    pata_esq[1].write(home_pata_esq + degree);
+    pata_dir[0].write(home_pata_dir[0] + degree);
+    pata_dir[2].write(home_pata_dir[2] + degree);
+    pata_esq[1].write(home_pata_esq[1] + degree);
 
     delay(1000/80);
 
@@ -251,9 +268,9 @@ void walkToRight(int speed = 1){
   // Down group 1
   for(int degree = 0; degree < 30; degree += speed){
 
-    rotula_dir[0].write(home_rotula_dir - 30 + degree);
-    rotula_dir[2].write(home_rotula_dir - 30 + degree);
-    rotula_esq[1].write(home_rotula_esq + 30 - degree);
+    rotula_dir[0].write(home_rotula_dir[0] - 30 + degree);
+    rotula_dir[2].write(home_rotula_dir[2] - 30 + degree);
+    rotula_esq[1].write(home_rotula_esq[1] + 30 - degree);
 
     delay(1000/60);
 
@@ -263,9 +280,9 @@ void walkToRight(int speed = 1){
 
   for(int degree = 0; degree < 30; degree += speed){
 
-    rotula_esq[0].write(home_rotula_esq + degree);
-    rotula_esq[2].write(home_rotula_esq + degree);
-    rotula_dir[1].write(home_rotula_dir - degree);
+    rotula_esq[0].write(home_rotula_esq[0] + degree);
+    rotula_esq[2].write(home_rotula_esq[2] + degree);
+    rotula_dir[1].write(home_rotula_dir[1] - degree);
 
     delay(1000/60);
 
@@ -274,9 +291,9 @@ void walkToRight(int speed = 1){
   // Movimentar grupo 2 para direita
   for(int degree = 0; degree < 20; degree += speed){
 
-    pata_esq[0].write(home_pata_esq + degree);
-    pata_esq[2].write(home_pata_esq + degree);
-    pata_dir[1].write(home_pata_dir + degree);
+    pata_esq[0].write(home_pata_esq[0] + degree);
+    pata_esq[2].write(home_pata_esq[2] + degree);
+    pata_dir[1].write(home_pata_dir[1] + degree);
 
     delay(1000/80);
 
@@ -285,9 +302,9 @@ void walkToRight(int speed = 1){
   // Down grupo 2
   for(int degree = 0; degree < 30; degree += speed){
 
-    rotula_esq[0].write(home_rotula_esq + 30 - degree);
-    rotula_esq[2].write(home_rotula_esq + 30 - degree);
-    rotula_dir[1].write(home_rotula_dir - 30 + degree);
+    rotula_esq[0].write(home_rotula_esq[0] + 30 - degree);
+    rotula_esq[2].write(home_rotula_esq[2] + 30 - degree);
+    rotula_dir[1].write(home_rotula_dir[1] - 30 + degree);
 
     delay(1000/60);
 
@@ -295,12 +312,12 @@ void walkToRight(int speed = 1){
 
   for(int degree = 0; degree < 20; degree += speed){
 
-    pata_dir[0].write(home_pata_dir + 20 - degree);
-    pata_dir[1].write(home_pata_dir + 20 - degree);
-    pata_dir[2].write(home_pata_dir + 20 - degree);
-    pata_esq[0].write(home_pata_esq + 20 - degree);
-    pata_esq[1].write(home_pata_esq + 20 - degree);
-    pata_esq[2].write(home_pata_esq + 20 - degree);
+    pata_dir[0].write(home_pata_dir[0] + 20 - degree);
+    pata_dir[1].write(home_pata_dir[1] + 20 - degree);
+    pata_dir[2].write(home_pata_dir[2] + 20 - degree);
+    pata_esq[0].write(home_pata_esq[0] + 20 - degree);
+    pata_esq[1].write(home_pata_esq[1] + 20 - degree);
+    pata_esq[2].write(home_pata_esq[2] + 20 - degree);
 
     delay(1000/80);
 
@@ -317,9 +334,9 @@ void walkToLeft(int speed = 1){
   // Rise group 1
   for(int degree = 0; degree < 30; degree += speed){
 
-    rotula_dir[0].write(home_rotula_dir - degree);
-    rotula_dir[2].write(home_rotula_dir - degree);
-    rotula_esq[1].write(home_rotula_esq + degree);
+    rotula_dir[0].write(home_rotula_dir[0] - degree);
+    rotula_dir[2].write(home_rotula_dir[2] - degree);
+    rotula_esq[1].write(home_rotula_esq[1] + degree);
 
     delay(1000/60);
 
@@ -328,9 +345,9 @@ void walkToLeft(int speed = 1){
   // Movimentar group 1 para direita
   for(int degree = 0; degree < 20; degree += speed){
 
-    pata_dir[0].write(home_pata_dir - degree);
-    pata_dir[2].write(home_pata_dir - degree);
-    pata_esq[1].write(home_pata_esq - degree);
+    pata_dir[0].write(home_pata_dir[0] - degree);
+    pata_dir[2].write(home_pata_dir[2] - degree);
+    pata_esq[1].write(home_pata_esq[1] - degree);
 
     delay(1000/80);
 
@@ -339,9 +356,9 @@ void walkToLeft(int speed = 1){
   // Down group 1
   for(int degree = 0; degree < 30; degree += speed){
 
-    rotula_dir[0].write(home_rotula_dir - 30 + degree);
-    rotula_dir[2].write(home_rotula_dir - 30 + degree);
-    rotula_esq[1].write(home_rotula_esq + 30 - degree);
+    rotula_dir[0].write(home_rotula_dir[0] - 30 + degree);
+    rotula_dir[2].write(home_rotula_dir[2] - 30 + degree);
+    rotula_esq[1].write(home_rotula_esq[1] + 30 - degree);
 
     delay(1000/60);
 
@@ -351,9 +368,9 @@ void walkToLeft(int speed = 1){
 
   for(int degree = 0; degree < 30; degree += speed){
 
-    rotula_esq[0].write(home_rotula_esq + degree);
-    rotula_esq[2].write(home_rotula_esq + degree);
-    rotula_dir[1].write(home_rotula_dir - degree);
+    rotula_esq[0].write(home_rotula_esq[0] + degree);
+    rotula_esq[2].write(home_rotula_esq[2] + degree);
+    rotula_dir[1].write(home_rotula_dir[1] - degree);
 
     delay(1000/60);
 
@@ -362,9 +379,9 @@ void walkToLeft(int speed = 1){
   // Movimentar grupo 2 para direita
   for(int degree = 0; degree < 20; degree += speed){
 
-    pata_esq[0].write(home_pata_esq - degree);
-    pata_esq[2].write(home_pata_esq - degree);
-    pata_dir[1].write(home_pata_dir - degree);
+    pata_esq[0].write(home_pata_esq[0] - degree);
+    pata_esq[2].write(home_pata_esq[2] - degree);
+    pata_dir[1].write(home_pata_dir[1] - degree);
 
     delay(1000/80);
 
@@ -373,9 +390,9 @@ void walkToLeft(int speed = 1){
   // Down grupo 2
   for(int degree = 0; degree < 30; degree += speed){
 
-    rotula_esq[0].write(home_rotula_esq + 30 - degree);
-    rotula_esq[2].write(home_rotula_esq + 30 - degree);
-    rotula_dir[1].write(home_rotula_dir - 30 + degree);
+    rotula_esq[0].write(home_rotula_esq[0] + 30 - degree);
+    rotula_esq[2].write(home_rotula_esq[2] + 30 - degree);
+    rotula_dir[1].write(home_rotula_dir[1] - 30 + degree);
 
     delay(1000/60);
 
@@ -383,12 +400,12 @@ void walkToLeft(int speed = 1){
 
   for(int degree = 0; degree < 20; degree += speed){
 
-    pata_dir[0].write(home_pata_dir - 20 + degree);
-    pata_dir[1].write(home_pata_dir - 20 + degree);
-    pata_dir[2].write(home_pata_dir - 20 + degree);
-    pata_esq[0].write(home_pata_esq - 20 + degree);
-    pata_esq[1].write(home_pata_esq - 20 + degree);
-    pata_esq[2].write(home_pata_esq - 20 + degree);
+    pata_dir[0].write(home_pata_dir[0] - 20 + degree);
+    pata_dir[1].write(home_pata_dir[1] - 20 + degree);
+    pata_dir[2].write(home_pata_dir[2] - 20 + degree);
+    pata_esq[0].write(home_pata_esq[0] - 20 + degree);
+    pata_esq[1].write(home_pata_esq[1] - 20 + degree);
+    pata_esq[2].write(home_pata_esq[2] - 20 + degree);
 
     delay(1000/80);
 
@@ -397,6 +414,155 @@ void walkToLeft(int speed = 1){
   home();
 
 }
+
+void squat(int speed = 1){
+
+  if(!crouched){
+
+    // Rise group 1
+    for(int degree = 0; degree < 30; degree += speed){
+
+      rotula_dir[0].write(home_rotula_dir[0] - degree);
+      rotula_dir[2].write(home_rotula_dir[2] - degree);
+      rotula_esq[1].write(home_rotula_esq[1] + degree);
+
+      delay(1000/30);
+
+    }
+
+    // Movimentar group 1 para dentro
+    for(int degree = 0; degree < 20; degree += speed){
+
+      pata_dir[0].write(home_pata_dir[0] - degree);
+      pata_dir[2].write(home_pata_dir[2] - degree);
+      pata_esq[1].write(home_pata_esq[1] + degree);
+
+      delay(1000/40);
+
+    }
+
+    // Down group 1
+    for(int degree = 0; degree < 30; degree += speed){
+
+      rotula_dir[0].write(home_rotula_dir[0] - 30 + degree);
+      rotula_dir[2].write(home_rotula_dir[2] - 30 + degree);
+      rotula_esq[1].write(home_rotula_esq[1] + 30 - degree);
+
+      delay(1000/30);
+
+    }
+
+    // Rise group 2
+    for(int degree = 0; degree < 30; degree += speed){
+
+      rotula_esq[0].write(home_rotula_esq[0] + degree);
+      rotula_esq[2].write(home_rotula_esq[2] + degree);
+      rotula_dir[1].write(home_rotula_dir[1] - degree);
+
+      delay(1000/30);
+
+    }
+
+    // Movimentar group 2 para dentro
+    for(int degree = 0; degree < 20; degree += speed){
+
+      pata_esq[0].write(home_pata_esq[0] + degree);
+      pata_esq[2].write(home_pata_esq[2] + degree);
+      pata_dir[1].write(home_pata_dir[1] - degree);
+
+      delay(1000/40);
+
+    }
+
+    // Down group 2
+    for(int degree = 0; degree < 30; degree += speed){
+
+      rotula_esq[0].write(home_rotula_esq[0] + 30 - degree);
+      rotula_esq[2].write(home_rotula_esq[2] + 30 - degree);
+      rotula_dir[1].write(home_rotula_dir[1] - 30 + degree);
+
+      delay(1000/30);
+
+    }
+
+    // Down body
+    for(int degree = 0; degree < 20; degree += speed){
+
+      rotula_dir[0].write(home_rotula_dir[0] - degree);
+      rotula_dir[2].write(home_rotula_dir[2] - degree);
+      rotula_esq[1].write(home_rotula_esq[1] + degree);
+
+      rotula_esq[0].write(home_rotula_esq[0] + degree);
+      rotula_esq[2].write(home_rotula_esq[2] + degree);
+      rotula_dir[1].write(home_rotula_dir[1] - degree);
+
+      delay(1000/30);
+
+    }
+
+    crouched = true;
+
+    reposWhenCrounched();
+
+  }
+
+}
+
+void rise(){
+
+
+
+
+}
+
+void reposWhenCrounched(int speed = 1){
+
+  int mainAmplitude = 20;
+
+  if(crouched){
+
+    for(int i = 0; i < 3; i++){
+
+      // Rise rigth rotula
+      for(int degree = 0; degree < mainAmplitude; degree += speed){
+
+        rotula_dir[i].write(home_rotula_dir[i] - 20 - degree);
+        delay(500/mainAmplitude);
+
+      }
+
+      // Down rigth rotula
+      for(int degree = 0; degree < mainAmplitude; degree += speed){
+
+        rotula_dir[i].write(home_rotula_dir[i] - 40 + degree);
+        delay(500/mainAmplitude);
+
+      }
+
+      // Rise left rotula
+      for(int degree = 0; degree < mainAmplitude; degree += speed){
+
+        rotula_esq[i].write(home_rotula_esq[i] + 20 + degree);
+        delay(500/mainAmplitude);
+
+      }
+
+      // Down left rotula
+      for(int degree = 0; degree < mainAmplitude; degree += speed){
+
+        rotula_esq[i].write(home_rotula_esq[i] + 40 - degree);
+        delay(500/mainAmplitude);
+
+      }
+
+    }
+
+
+  }
+
+}
+
+
 
 void encolher(){
 
@@ -440,12 +606,12 @@ void agachar(){
   //Levanta rotula
   for(int i = 0; i < 4500; i++){
 
-      rotula_dir[0].write(45-15);
-      rotula_dir[1].write(45-15);
-      rotula_dir[2].write(45-15);
-      rotula_esq[0].write(135+15);
-      rotula_esq[1].write(135+15);
-      rotula_esq[2].write(135+15);
+      rotula_dir[0].write(45 - 15);
+      rotula_dir[1].write(45 - 15);
+      rotula_dir[2].write(45 - 15);
+      rotula_esq[0].write(135 + 15);
+      rotula_esq[1].write(135 + 15);
+      rotula_esq[2].write(135 + 15);
 
       // delay(4500/1000);
 
